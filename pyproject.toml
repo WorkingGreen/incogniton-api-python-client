@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "incogniton-py-client"
+version = "0.1.0"
+description = "A Python client for the Incogniton API."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "incogniton", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+httpx = "^0.28.1"
+pydantic = "^2.11.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+pytest-asyncio = "^0.23.5"
+black = "^25.1.0"
+isort = "^6.0.1"
+flake8 = "^7.2.0"
+mypy = "^1.15.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "strict" 

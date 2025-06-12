@@ -1,0 +1,24 @@
+extends: spectral:oas
+rules:
+   oas3-parameter-description: true
+   oas3-parameter-schema-or-content: true
+   oas3-valid-parameter-value: true
+   oas3-valid-schema-example: true
+   oas3-valid-media-type-example: true
+   oas3-valid-oas-content-example: true
+   oas3-valid-oas-content: true
+   oas3-valid-oas-document: true
+   oas3-valid-operation-example: true
+   oas3-valid-operation-object: true
+   oas3-valid-parameter-example: true
+   oas3-valid-parameter-object: true
+   oas3-valid-path-item-object: true
+   oas3-valid-path-object: true
+   oas3-valid-request-body-object: true
+   oas3-valid-response-example: true
+   oas3-valid-response-object: true
+   oas3-valid-security-requirement-object: true
+   oas3-valid-server-object: true
+   oas3-valid-server-variable-object: true
+   oas3-valid-tag-object: true
+   oas3-valid-xml-object: true
