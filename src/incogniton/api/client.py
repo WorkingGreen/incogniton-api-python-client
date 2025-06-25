@@ -128,10 +128,9 @@ class ProfileOperations:
         """
         try:
             # First, stringify the data exactly as needed by the API
-            json_string = json.dumps({
-                "profile_browser_id": profile_id,
-                **data.profileData
-            })
+            profile_dict = data.profileData.copy() if data.profileData else {}
+            profile_dict["profile_browser_id"] = profile_id
+            json_string = json.dumps(profile_dict)
             
             # Then wrap it in the profileData parameter as expected by the API
             form_data = {

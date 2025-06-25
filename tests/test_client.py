@@ -5,6 +5,7 @@ from incogniton import IncognitonClient
 import logging
 from incogniton.models import CreateBrowserProfileRequest, UpdateBrowserProfileRequest
 import json
+from incogniton.utils.logger import logger
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -130,4 +131,152 @@ async def test_profile_lifecycle():
     delete_response = await client.profile.delete(profile_id)
     logger.info(f"Profile deletion response: {delete_response}")
     assert delete_response["status"] == "ok" 
+
+@pytest.mark.asyncio
+async def test_list_profiles():
+    client = IncognitonClient()
+    response = await client.profile.list()
+    logger.info(f"List profiles response: {response}")
+    assert response.get("status") != "error", f"List profiles failed: {response}"
+
+@pytest.mark.asyncio
+async def test_get_profile():
+    client = IncognitonClient()
+    
+    # First create a profile to get
+    profile_data = {
+        "profileData": {
+            "general_profile_information": {
+                "profile_name": "Test Get Profile",
+                "profile_notes": "Profile for get test",
+                "simulated_operating_system": "Windows",
+                "profile_browser_version": "131"
+            }
+        }
+    }
+    create_request = CreateBrowserProfileRequest(profileData=profile_data)
+    create_response = await client.profile.add(create_request)
+    logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+    assert create_response["status"] == "ok"
+    profile_id = create_response["profile_browser_id"]
+    
+    try:
+        # Now get the profile
+        get_response = await client.profile.get(profile_id)
+        logger.info(f"Get profile response: {get_response}")
+        assert get_response.get("status") != "error", f"Get profile failed: {get_response}"
+    finally:
+        # Clean up
+        delete_response = await client.profile.delete(profile_id)
+        logger.info(f"Profile deleted: {delete_response}")
+
+@pytest.mark.asyncio
+async def test_profile_status():
+    client = IncognitonClient()
+    
+    # Create a profile
+    profile_data = {
+        "profileData": {
+            "general_profile_information": {
+                "profile_name": "Status Test Profile",
+                "profile_notes": "Testing status operations",
+                "simulated_operating_system": "Windows",
+                "profile_browser_version": "131"
+            }
+        }
+    }
+    create_request = CreateBrowserProfileRequest(profileData=profile_data)
+    create_response = await client.profile.add(create_request)
+    logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+    assert create_response["status"] == "ok"
+    profile_id = create_response["profile_browser_id"]
+    
+    try:
+        # Get initial status
+        status_response = await client.profile.getStatus(profile_id)
+        logger.info(f"Initial status response: {status_response}")
+        assert status_response.get("status") != "error", f"Get status failed: {status_response}"
+        
+        # Launch the profile
+        launch_response = await client.profile.launch(profile_id)
+        logger.info(f"Profile launched: {launch_response}")
+        assert launch_response.get("status") != "error", f"Launch failed: {launch_response}"
+        
+        # Get status after launch
+        status_response = await client.profile.getStatus(profile_id)
+        logger.info(f"Status after launch: {status_response}")
+        assert status_response.get("status") != "error", f"Get status after launch failed: {status_response}"
+        
+        # Stop the profile
+        stop_response = await client.profile.stop(profile_id)
+        logger.info(f"Profile stopped: {stop_response}")
+        assert stop_response.get("status") != "error", f"Stop failed: {stop_response}"
+        
+        # Get final status
+        status_response = await client.profile.getStatus(profile_id)
+        logger.info(f"Final status response: {status_response}")
+        assert status_response.get("status") != "error", f"Get final status failed: {status_response}"
+    finally:
+        # Clean up
+        delete_response = await client.profile.delete(profile_id)
+        logger.info(f"Profile deleted: {delete_response}")
+
+@pytest.mark.asyncio
+async def test_cookie_operations():
+    client = IncognitonClient()
+    
+    # Create a profile
+    profile_data = {
+        "profileData": {
+            "general_profile_information": {
+                "profile_name": "Cookie Test Profile",
+                "profile_notes": "Testing cookie operations",
+                "simulated_operating_system": "Windows",
+                "profile_browser_version": "131"
+            }
+        }
+    }
+    create_request = CreateBrowserProfileRequest(profileData=profile_data)
+    create_response = await client.profile.add(create_request)
+    logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+    assert create_response["status"] == "ok"
+    profile_id = create_response["profile_browser_id"]
+    
+    try:
+        # Add cookies
+        cookie_data = [
+            {
+                "name": "test_cookie",
+                "value": "test_value",
+                "domain": ".example.com",
+                "path": "/",
+                "secure": True,
+                "httpOnly": True,
+                "session": False,
+                "sameSite": "no_restriction",
+                "expirationDate": 1760000000
+            }
+        ]
+        add_response = await client.cookie.add(profile_id, cookie_data)
+        logger.info(f"Cookies added: {add_response}")
+        assert add_response.get("status") != "error", f"Add cookie failed: {add_response}"
+        
+        # Get cookies
+        get_response = await client.cookie.get(profile_id)
+        logger.info(f"Get cookies response: {get_response}")
+        assert get_response.get("status") != "error", f"Get cookies failed: {get_response}"
+        
+        # Delete cookies
+        delete_response = await client.cookie.delete(profile_id)
+        logger.info(f"Cookies deleted: {delete_response}")
+        assert delete_response.get("status") != "error", f"Delete cookies failed: {delete_response}"
+        
+        # Verify cookies are deleted
+        get_response = await client.cookie.get(profile_id)
+        logger.info(f"Final cookie state: {get_response}")
+        assert get_response.get("status") != "error", f"Get cookies after delete failed: {get_response}"
+    finally:
+        # Clean up
+        delete_response = await client.profile.delete(profile_id)
+        logger.info(f"Profile deleted: {delete_response}") 
     

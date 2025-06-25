@@ -20,6 +20,9 @@ wheels/
 .installed.cfg
 *.egg
 
+# Documentation
+openapi-docs.yaml
+
 # Virtual Environment
 .env
 .venv
@@ -61,4 +64,4 @@ logs/
 *~
 *.bak
 *.backup
-*pyproject.toml.* 
+*pyproject.toml.*
