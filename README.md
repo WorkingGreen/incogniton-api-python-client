@@ -26,8 +26,7 @@ pytest tests/
 
 ## Features
 
--  Profile management (create, update, delete)
+-  Profile and launch management
 -  Cookie management
 -  Browser automation with Selenium and Puppeteer
 -  Support for headless mode
--  Local and cloud launch options
