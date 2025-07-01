@@ -5,7 +5,7 @@ from typing import Optional
 
 class LoadingAnimation:
     def __init__(self, message: str = "Loading", chars: str = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"):
-        self.message = message
+        self.message = zmessage
         self.chars = chars
         self.running = False
         self.thread: Optional[threading.Thread] = None

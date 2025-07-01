@@ -1,3 +1,3 @@
-# from .browser import IncognitonBrowser
+from .browser import IncognitonBrowser
 
-# __all__ = ["IncognitonBrowser"] 
+__all__ = ["IncognitonBrowser"] 

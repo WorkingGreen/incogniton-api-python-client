@@ -1,6 +1,7 @@
 import incogniton
 from incogniton import IncognitonClient
 from incogniton.models import CreateBrowserProfileRequest
+from incogniton.browser.browser import IncognitonBrowser
 import asyncio
 
 async def add_profile():
@@ -18,6 +19,14 @@ async def add_profile():
     request = CreateBrowserProfileRequest(profileData=profile_data)
     response = await client.profile.add(request)
     print(f"Profile addition response: {response}")
+    return client, response.get("profile_browser_id")
+
+async def test_start_selenium():
+    client, profile_id = await add_profile()
+    browser = IncognitonBrowser(client, profile_id, headless=True)
+    driver = await browser.start_selenium()
+    print(f"Selenium WebDriver: {driver}")
+    # Optionally, clean up: driver.quit() if driver is not None
 
 
 def main():
@@ -27,7 +36,7 @@ def main():
     # Optionally, add more tests here, e.g., check available methods
     print(f"Client has profile: {'profile' in dir(client)}")
     # Run add_profile test
-    asyncio.run(add_profile())
+    asyncio.run(test_start_selenium())
 
 if __name__ == "__main__":
     main() 

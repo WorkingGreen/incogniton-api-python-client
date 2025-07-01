@@ -10,7 +10,7 @@ class HttpAgent:
     def __init__(
         self,
         base_url: str,
-        timeout: int = 30,
+        timeout: int = 35, # 35 secs timeout to accommodate browser booting
     ):
         """Initialize HTTP client."""
         self.base_url = base_url
@@ -65,15 +65,20 @@ class HttpAgent:
             if headers:
                 request_headers.update(headers)
 
-            # Handle form data
+            # For form data, httpx expects a dict, not a string or bytes
             if headers and headers.get("Content-Type") == "application/x-www-form-urlencoded":
-                data = self._encode_form_data(data) if data else None
+                if data is not None and isinstance(data, dict):
+                    data_dict = data
+                else:
+                    data_dict = None
+            else:
+                data_dict = None
 
             response = await self._client.request(
                 method=method,
                 url=endpoint,
-                json=data if not isinstance(data, str) else None,
-                data=data if isinstance(data, str) else None,
+                json=data if not (headers and headers.get("Content-Type") == "application/x-www-form-urlencoded") else None,
+                data=data_dict,
                 headers=request_headers,
             )
             response.raise_for_status()
@@ -83,11 +88,12 @@ class HttpAgent:
                 response_data = e.response.json()
                 message = response_data.get("message", e.response.text)
             except ValueError:
+                response_data = {"error": e.response.text}
                 message = e.response.text
             raise IncognitonError(
                 message=f"API Error: {message}",
                 status_code=e.response.status_code,
-                response=e.response.json() if e.response.text else None
+                response=response_data
             )
         except httpx.ConnectError as e:
             raise IncognitonError(f"Connection error: {str(e)}")
@@ -132,30 +138,15 @@ class HttpAgent:
         """Close the client."""
         await self._client.aclose()
 
-    async def post_with_json(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Send a POST request to the specified endpoint.
-
-        Args:
-            endpoint: API endpoint to send the request to.
-            data: Optional form data to send.
-            json: Optional JSON data to send.
-
-        Returns:
-            Dict containing the response data.
-
-        Raises:
-            IncognitonAPIError: If the request fails.
-        """
+    async def post_with_json(self, endpoint: str, data: Optional[Dict[str, Any]] = None, json_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Send a POST request to the specified endpoint."""
         try:
             url = f"{self.base_url}{endpoint}"
-            headers = {"Content-Type": "application/json"} if json else {}
-            payload = json.dumps(json) if json else data
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, data=payload, headers=headers) as response:
-                    response_data = await response.json()
-                    if response.status != 200:
-                        raise IncognitonError(f"API request failed: {response_data.get('message', 'Unknown error')}")
-                    return response_data
+            headers = {"Content-Type": "application/json"} if json_data else {}
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=json_data, data=data, headers=headers)
+                response.raise_for_status()
+                return response.json()
         except Exception as e:
             raise IncognitonError(f"Failed to send POST request: {str(e)}") 
 

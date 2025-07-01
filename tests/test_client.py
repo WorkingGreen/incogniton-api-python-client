@@ -1,80 +1,14 @@
 import pytest
-import datetime
-from incogniton import IncognitonClient
-# from incogniton.browser.browser import IncognitonBrowser
+from incogniton import IncognitonClient, IncognitonBrowser
+from incogniton.api.client import IncognitonError
+
 import logging
 from incogniton.models import CreateBrowserProfileRequest, UpdateBrowserProfileRequest
-import json
 from incogniton.utils.logger import logger
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@pytest.mark.asyncio
-async def test_add_profile():
-    client = IncognitonClient()
-    profile_data = {
-        "profileData": {
-            "general_profile_information": {
-                "profile_name": "QProfile Profile",
-                "profile_notes": "Test Notes",
-                "simulated_operating_system": "Windows",
-                "profile_browser_version": "131"
-            }
-        }
-    }
-    
-    request = CreateBrowserProfileRequest(profileData=profile_data)
-    response = await client.profile.add(request)
-    print(f"Profile addition response: {response}")
-    assert response["status"] == "ok"
-    assert "profile_browser_id" in response
-
-@pytest.mark.asyncio
-async def test_update_profile():
-    client = IncognitonClient()
-
-    # First create a profile
-    profile_data = {
-        "profileData": {
-            "general_profile_information": {
-                "profile_name": "Test Profile",
-                "profile_notes": "Test Notes",
-                "simulated_operating_system": "Windows",
-                "profile_browser_version": "131"
-            }
-        }
-    }
-    create_request = CreateBrowserProfileRequest(profileData=profile_data)
-    try:
-        create_response = await client.profile.add(create_request)
-        print(f"Profile creation response: {create_response}")
-        print(f"Profile creation request data: {profile_data}")
-        if create_response.get("status") == "error":
-            print(f"Profile creation failed with error: {create_response.get('message', 'No error message')}")
-            raise AssertionError(f"Profile creation failed: {create_response.get('message', 'No error message')}")
-        assert create_response["status"] == "ok"
-        assert "profile_browser_id" in create_response
-        profile_id = create_response["profile_browser_id"]
-    except Exception as e:
-        print(f"Exception during profile creation: {str(e)}")
-        raise
-
-    # Now update the profile
-    update_data = {
-        "profileData": {
-            "general_profile_information": {
-                "profile_name": "Updated Profile",
-                "profile_notes": "Note has been updated via API",
-                "simulated_operating_system": "Windows",
-                "profile_browser_version": "131"
-            }
-        }
-    }
-    update_request = UpdateBrowserProfileRequest(profileData=update_data)
-    update_response = await client.profile.update(profile_id, update_request)
-    logger.info(f"Profile update response: {update_response}")
-    assert update_response["status"] == "ok"
 
 @pytest.mark.asyncio
 async def test_profile_lifecycle():
@@ -120,12 +54,6 @@ async def test_profile_lifecycle():
     puppeteer_response = await client.automation.launchPuppeteerCustom(profile_id, headless_puppeteer_args)
     print(f"Puppeteer launch response: {puppeteer_response}")
     assert puppeteer_response.get("status") == "ok", f"Failed to launch with Puppeteer: {puppeteer_response.get('message', 'Unknown error')}"
-
-    # Step 4: Launch with Selenium in headless mode
-    # headless_selenium_args = "--headless=new"
-    # selenium_response = await client.automation.launchSeleniumCustom(profile_id, headless_selenium_args)
-    # print(f"Selenium launch response: {selenium_response}")
-    # assert selenium_response.get("status") == "ok", f"Failed to launch with Selenium: {selenium_response.get('message', 'Unknown error')}"
     
     # Step 5: Delete the profile
     delete_response = await client.profile.delete(profile_id)
@@ -195,27 +123,27 @@ async def test_profile_status():
         # Get initial status
         status_response = await client.profile.getStatus(profile_id)
         logger.info(f"Initial status response: {status_response}")
-        assert status_response.get("status") != "error", f"Get status failed: {status_response}"
+        assert status_response.get("status") == "Ready", f"Get status failed: {status_response}"
         
         # Launch the profile
         launch_response = await client.profile.launch(profile_id)
         logger.info(f"Profile launched: {launch_response}")
-        assert launch_response.get("status") != "error", f"Launch failed: {launch_response}"
+        assert launch_response.get("status") == "ok", f"Launch failed: {launch_response}"
         
         # Get status after launch
         status_response = await client.profile.getStatus(profile_id)
         logger.info(f"Status after launch: {status_response}")
-        assert status_response.get("status") != "error", f"Get status after launch failed: {status_response}"
-        
+        assert status_response.get("status") in ["Ready", "Launched"], f"Get status post-launch failed: {status_response}"
+
         # Stop the profile
         stop_response = await client.profile.stop(profile_id)
         logger.info(f"Profile stopped: {stop_response}")
-        assert stop_response.get("status") != "error", f"Stop failed: {stop_response}"
+        assert stop_response.get("status") == "ok", f"Stop failed: {stop_response}"
         
         # Get final status
         status_response = await client.profile.getStatus(profile_id)
         logger.info(f"Final status response: {status_response}")
-        assert status_response.get("status") != "error", f"Get final status failed: {status_response}"
+        assert status_response.get("status") in ["Ready", "Launched"], f"Get status post-launch failed: {status_response}"
     finally:
         # Clean up
         delete_response = await client.profile.delete(profile_id)
@@ -275,6 +203,111 @@ async def test_cookie_operations():
         get_response = await client.cookie.get(profile_id)
         logger.info(f"Final cookie state: {get_response}")
         assert get_response.get("status") != "error", f"Get cookies after delete failed: {get_response}"
+    finally:
+        # Clean up
+        delete_response = await client.profile.delete(profile_id)
+        logger.info(f"Profile deleted: {delete_response}") 
+
+# @pytest.mark.asyncio
+# async def test_launch_selenium():
+#     client = IncognitonClient()
+#     # Create a profile
+#     profile_data = {
+#         "profileData": {
+#             "general_profile_information": {
+#                 "profile_name": "Selenium Launch Test Profile",
+#                 "profile_notes": "Testing launchSelenium",
+#                 "simulated_operating_system": "Windows",
+#                 "profile_browser_version": "131"
+#             }
+#         }
+#     }
+#     create_request = CreateBrowserProfileRequest(profileData=profile_data)
+#     create_response = await client.profile.add(create_request)
+#     logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+#     assert create_response["status"] == "ok"
+#     profile_id = create_response["profile_browser_id"]
+#     try:
+#         response = await client.automation.launchSelenium(profile_id)
+#         print(f"launchSelenium response: {response}")
+#         assert response.get("status") == "ok", f"launchSelenium failed: {response}"
+#     finally:
+#         # Clean up
+#         delete_response = await client.profile.delete(profile_id)
+#         logger.info(f"Profile deleted: {delete_response}")
+
+# @pytest.mark.asyncio
+# async def test_start_selenium():
+#     client = IncognitonClient()
+#     # Create a profile
+#     profile_data = {
+#         "profileData": {
+#             "general_profile_information": {
+#                 "profile_name": "Selenium Test Profile",
+#                 "profile_notes": "Testing start_selenium",
+#                 "simulated_operating_system": "Windows",
+#                 "profile_browser_version": "131"
+#             }
+#         }
+#     }
+#     create_request = CreateBrowserProfileRequest(profileData=profile_data)
+#     create_response = await client.profile.add(create_request)
+#     logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+#     assert create_response["status"] == "ok"
+#     profile_id = create_response["profile_browser_id"]
+#     try:
+#         browser = IncognitonBrowser(client, profile_id, headless=True)
+#         driver = await browser.start_selenium()
+#         print(f"Selenium WebDriver: {driver}")
+#         assert driver is not None, "Failed to start Selenium WebDriver"
+#         # Optionally, you can quit the driver if needed
+#         driver.quit()
+#     finally:
+#         # Clean up
+#         delete_response = await client.profile.delete(profile_id)
+#         logger.info(f"Profile deleted: {delete_response}") 
+
+@pytest.mark.asyncio
+async def test_start_pyppeteer():
+    client = IncognitonClient()
+    # Create a profile
+    profile_data = {
+        "profileData": {
+            "general_profile_information": {
+                "profile_name": "Pyppeteer Test Profile",
+                "profile_notes": "Testing start_pyppeteer",
+                "simulated_operating_system": "Windows",
+                "profile_browser_version": "131"
+            }
+        }
+    }
+    create_request = CreateBrowserProfileRequest(profileData=profile_data)
+    create_response = await client.profile.add(create_request)
+    logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+    assert create_response["status"] == "ok"
+    profile_id = create_response["profile_browser_id"]
+    try:
+        browser = IncognitonBrowser(client, profile_id, headless=True)
+        try:
+            pyppeteer_browser = await browser.start_pyppeteer()
+            assert pyppeteer_browser is not None, "Failed to start Pyppeteer Browser"
+            
+            version = await pyppeteer_browser.version()
+            print(f"Pyppeteer Browser Version: {version}")
+
+            # Go to a page and take a screenshot
+            page = await pyppeteer_browser.newPage()
+            await page.goto("https://www.wikipedia.org")
+            await page.screenshot({'path': 'automated_screenshot.png'})
+            logger.info(">>>Screenshot saved as example.png 📸 <<<")
+
+            if pyppeteer_browser is not None:
+                await pyppeteer_browser.close()
+                
+            
+        except IncognitonError as e:
+            logger.error(f"IncognitonError: {e}")
+            assert False, f"IncognitonError raised: {e}"
     finally:
         # Clean up
         delete_response = await client.profile.delete(profile_id)
