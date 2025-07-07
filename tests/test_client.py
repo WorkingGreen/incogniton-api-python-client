@@ -2,12 +2,8 @@ import pytest
 from incogniton import IncognitonClient, IncognitonBrowser
 from incogniton.api.client import IncognitonError
 
-import logging
 from incogniton.models import CreateBrowserProfileRequest, UpdateBrowserProfileRequest
 from incogniton.utils.logger import logger
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 @pytest.mark.asyncio
@@ -26,8 +22,7 @@ async def test_profile_lifecycle():
         }
     }
     
-    create_request = CreateBrowserProfileRequest(profileData=profile_data)
-    create_response = await client.profile.add(create_request)
+    create_response = await client.profile.add(profile_data)
     print(f"Create response: {create_response}")
     assert create_response["status"] == "ok"
     assert "profile_browser_id" in create_response
@@ -44,8 +39,8 @@ async def test_profile_lifecycle():
             }
         }
     }
-    update_request = UpdateBrowserProfileRequest(profileData=update_data)
-    update_response = await client.profile.update(profile_id, update_request)
+    
+    update_response = await client.profile.update(profile_id, update_data)
     logger.info(f"Profile update response: {update_response}")
     assert update_response["status"] == "ok"
     
@@ -82,8 +77,8 @@ async def test_get_profile():
             }
         }
     }
-    create_request = CreateBrowserProfileRequest(profileData=profile_data)
-    create_response = await client.profile.add(create_request)
+    
+    create_response = await client.profile.add(profile_data)
     logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
     assert create_response["status"] == "ok"
     profile_id = create_response["profile_browser_id"]
@@ -192,7 +187,7 @@ async def test_cookie_operations():
         # Get cookies
         get_response = await client.cookie.get(profile_id)
         logger.info(f"Get cookies response: {get_response}")
-        assert get_response.get("status") != "error", f"Get cookies failed: {get_response}"
+        assert get_response.get("status") == "ok", f"Get cookies failed: {get_response}"
         
         # Delete cookies
         delete_response = await client.cookie.delete(profile_id)
@@ -268,14 +263,14 @@ async def test_cookie_operations():
 #         logger.info(f"Profile deleted: {delete_response}") 
 
 @pytest.mark.asyncio
-async def test_start_pyppeteer():
+async def test_start_playwright():
     client = IncognitonClient()
     # Create a profile
     profile_data = {
         "profileData": {
             "general_profile_information": {
-                "profile_name": "Pyppeteer Test Profile",
-                "profile_notes": "Testing start_pyppeteer",
+                "profile_name": "Playwright Test Profile",
+                "profile_notes": "Testing start_playwright",
                 "simulated_operating_system": "Windows",
                 "profile_browser_version": "131"
             }
@@ -289,27 +284,32 @@ async def test_start_pyppeteer():
     try:
         browser = IncognitonBrowser(client, profile_id, headless=True)
         try:
-            pyppeteer_browser = await browser.start_pyppeteer()
-            assert pyppeteer_browser is not None, "Failed to start Pyppeteer Browser"
-            
-            version = await pyppeteer_browser.version()
-            print(f"Pyppeteer Browser Version: {version}")
-
-            # Go to a page and take a screenshot
-            page = await pyppeteer_browser.newPage()
-            await page.goto("https://www.wikipedia.org")
-            await page.screenshot({'path': 'automated_screenshot.png'})
-            logger.info(">>>Screenshot saved as example.png 📸 <<<")
-
-            if pyppeteer_browser is not None:
-                await pyppeteer_browser.close()
-                
-            
+            playwright_browser = await browser.start_playwright()
+            assert playwright_browser is not None, "Failed to start Playwright Browser"
+           
+            # Go to English Wikipedia, search, click result, extract text, and screenshot
+            page = await playwright_browser.new_page()
+            await page.goto("https://en.wikipedia.org", wait_until="domcontentloaded")
+            await page.wait_for_selector('input#searchInput')
+            # Search for "Browser automation"
+            await page.fill('input#searchInput', 'Browser automation')
+            await page.press('input#searchInput', 'Enter')
+            await page.wait_for_selector('ul.mw-search-results li a')
+            # Click the first search result
+            await page.click('ul.mw-search-results li a')
+            await page.wait_for_selector('p')
+            # Extract and log the first paragraph
+            first_paragraph = await page.text_content('p')
+            logger.info(f"First paragraph of the article: {first_paragraph.strip() if first_paragraph else 'N/A'}")
+            # Screenshot the article
+            await page.screenshot(path="wikipedia_article_en.png", full_page=True)
+            logger.info("Screenshot of English Wikipedia article saved as wikipedia_article_en.png 📸")
+            if playwright_browser is not None:
+                await browser.close(playwright_browser)
         except IncognitonError as e:
             logger.error(f"IncognitonError: {e}")
             assert False, f"IncognitonError raised: {e}"
     finally:
         # Clean up
         delete_response = await client.profile.delete(profile_id)
-        logger.info(f"Profile deleted: {delete_response}") 
-    
+        logger.info(f"Profile deleted: {delete_response}")

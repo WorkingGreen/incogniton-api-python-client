@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "incogniton-py"
-version = "0.1.0"
+name = "incogniton"
+version = "0.2.0"
 description = "Python client for Incogniton API"
 authors = ["Yusuf Abdulhafeez <yusuf@incogniton.com>"]
 readme = "README.md"
@@ -10,7 +10,8 @@ packages = [{include = "incogniton", from = "src"}]
 python = ">=3.9,<4.0"
 httpx = "^0.28.1"
 pydantic = "^2.6.4"
-pyppeteer = "^2.0.0"
+playwright = "^1.53.0"
+urllib3 = "^2.5.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.2"

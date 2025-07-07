@@ -90,20 +90,24 @@ class ProfileOperations:
         """Get a specific browser profile."""
         return await self.http.get(f"/profile/get/{profile_id}")
         
-    async def add(self, data: CreateBrowserProfileRequest) -> Dict[str, str]:
+    async def add(self, data) -> Dict[str, str]:
         """Add a new browser profile.
         
         Args:
-            data: Profile configuration data.
+            data: Profile configuration data (dict or CreateBrowserProfileRequest).
             
         Returns:
             Dict containing profile ID and status.
         """
         try:
+            if isinstance(data, dict):
+                data = CreateBrowserProfileRequest(**data)
+            elif not isinstance(data, CreateBrowserProfileRequest):
+                raise TypeError("data must be a dict or CreateBrowserProfileRequest instance")
             # Convert the entire profileData object to a JSON string
             json_string = json.dumps(data.profileData)
             
-            # Wrap it in the profileData parameter as expected by the API
+            # wrap in form data for form-urlencoded
             form_data = {
                 "profileData": json_string
             }
@@ -115,18 +119,22 @@ class ProfileOperations:
             )
         except Exception as e:
             raise IncognitonAPIError(f"Failed to add profile: {str(e)}")
-        
-    async def update(self, profile_id: ProfileId, data: UpdateBrowserProfileRequest) -> Dict[str, str]:
+    
+    async def update(self, profile_id: ProfileId, data) -> Dict[str, str]:
         """Update an existing browser profile.
         
         Args:
             profile_id: Unique identifier of the profile.
-            data: Updated profile configuration.
+            data: Updated profile configuration (dict or UpdateBrowserProfileRequest).
             
         Returns:
             Dict containing message and status.
         """
         try:
+            if isinstance(data, dict):
+                data = UpdateBrowserProfileRequest(**data)
+            elif not isinstance(data, UpdateBrowserProfileRequest):
+                raise TypeError("data must be a dict or UpdateBrowserProfileRequest instance")
             # First, stringify the data exactly as needed by the API
             profile_dict = data.profileData.copy() if data.profileData else {}
             profile_dict["profile_browser_id"] = profile_id
@@ -220,4 +228,3 @@ class AutomationOperations:
     async def launchSeleniumCustom(self, profile_id: ProfileId, custom_args: str) -> Dict[str, str]:
         """Launch a browser profile with Selenium automation using custom arguments."""
         return await self.http.post(f"/automation/launch/python/{profile_id}/", data={"customArgs": custom_args})
- 

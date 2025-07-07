@@ -24,12 +24,13 @@ class Logger:
         self.logger = logging.getLogger('incogniton')
         self.logger.setLevel(logging.INFO)
 
-        # Console handler with colored output
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(
-            logging.Formatter('%(message)s')
-        )
-        self.logger.addHandler(console_handler)
+        # Only add handler if none exist to prevent duplicate logs
+        if not self.logger.handlers:
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setFormatter(
+                logging.Formatter('%(message)s')
+            )
+            self.logger.addHandler(console_handler)
 
     def info(self, message: str) -> None:
         """Log an info message."""
