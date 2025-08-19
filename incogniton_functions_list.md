@@ -10,15 +10,15 @@
    -  Add a new browser profile. "create_request" is a "CreateBrowserProfileRequest".
 -  `await client.profile.update(profile_id, update_request)`
    -  Update an existing browser profile. "update_request" is an "UpdateBrowserProfileRequest".
--  `await client.profile.switchProxy(profile_id, proxy)`
+-  `await client.profile.switch_proxy(profile_id, proxy)`
    -  Update a browser profile's proxy configuration.
 -  `await client.profile.launch(profile_id)`
    -  Launch a browser profile.
--  `await client.profile.launchForceLocal(profile_id)`
+-  `await client.profile.launch_force_local(profile_id)`
    -  Force a browser profile to launch in local mode.
--  `await client.profile.launchForceCloud(profile_id)`
+-  `await client.profile.launch_force_cloud(profile_id)`
    -  Force a browser profile to launch in cloud mode.
--  `await client.profile.getStatus(profile_id)`
+-  `await client.profile.get_status(profile_id)`
    -  Get the current status of a browser profile.
 -  `await client.profile.stop(profile_id)`
    -  Stop a running browser profile.
@@ -36,14 +36,14 @@
 
 ## Automation Operations (`client.automation`)
 
--  `await client.automation.launchPuppeteer(profile_id)`
-   -  Launch a browser profile with Puppeteer automation.
--  `await client.automation.launchPuppeteerCustom(profile_id, custom_args)`
-   -  Launch a browser profile with Puppeteer automation using custom arguments.
--  `await client.automation.launchSelenium(profile_id)`
-   -  Launch a browser profile with Selenium automation.
--  `await client.automation.launchSeleniumCustom(profile_id, custom_args)`
-   -  Launch a browser profile with Selenium automation using custom arguments.
+-  `await client.automation.launch_puppeteer(profile_id)`
+-  Launch a browser profile with Puppeteer automation.
+-  `await client.automation.launch_puppeteer_custom(profile_id, custom_args)`
+-  Launch a browser profile with Puppeteer automation using custom arguments.
+-  `await client.automation.launch_selenium(profile_id)`
+-  Launch a browser profile with Selenium automation.
+-  `await client.automation.launch_selenium_custom(profile_id, custom_args)`
+-  Launch a browser profile with Selenium automation using custom arguments.
 
 ## Browser Automation Operations (`browser`)
 

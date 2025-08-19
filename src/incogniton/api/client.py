@@ -153,7 +153,7 @@ class ProfileOperations:
         except Exception as e:
             raise IncognitonAPIError(f"Failed to update profile: {str(e)}")
         
-    async def switchProxy(self, profile_id: ProfileId, proxy: Proxy) -> Dict[str, str]:
+    async def switch_proxy(self, profile_id: ProfileId, proxy: Proxy) -> Dict[str, str]:
         """Helper method to update a browser profile's proxy configuration."""
         return await self.update(profile_id, UpdateBrowserProfileRequest(profileData={"Proxy": proxy}))
         
@@ -161,15 +161,15 @@ class ProfileOperations:
         """Launch a browser profile."""
         return await self.http.get(f"/profile/launch/{profile_id}")
         
-    async def launchForceLocal(self, profile_id: ProfileId) -> Dict[str, str]:
+    async def launch_force_local(self, profile_id: ProfileId) -> Dict[str, str]:
         """Force a browser profile to launch in local mode."""
         return await self.http.get(f"/profile/launch/{profile_id}/force/local")
         
-    async def launchForceCloud(self, profile_id: ProfileId) -> Dict[str, str]:
+    async def launch_force_cloud(self, profile_id: ProfileId) -> Dict[str, str]:
         """Force a browser profile to launch in cloud mode."""
         return await self.http.get(f"/profile/launch/{profile_id}/force/cloud")
         
-    async def getStatus(self, profile_id: ProfileId) -> Dict[str, ProfileStatus]:
+    async def get_status(self, profile_id: ProfileId) -> Dict[str, ProfileStatus]:
         """Get the current status of a browser profile."""
         return await self.http.get(f"/profile/status/{profile_id}")
         
@@ -213,18 +213,18 @@ class AutomationOperations:
     def __init__(self, http_agent: HttpAgent):
         self.http = http_agent
         
-    async def launchPuppeteer(self, profile_id: ProfileId) -> Dict[str, str]:
+    async def launch_puppeteer(self, profile_id: ProfileId) -> Dict[str, str]:
         """Launch a browser profile with Puppeteer automation."""
         return await self.http.get(f"/automation/launch/puppeteer/{profile_id}")
         
-    async def launchPuppeteerCustom(self, profile_id: ProfileId, custom_args: str) -> Dict[str, str]:
+    async def launch_puppeteer_custom(self, profile_id: ProfileId, custom_args: str) -> Dict[str, str]:
         """Launch a browser profile with Puppeteer automation using custom arguments."""
         return await self.http.post("/automation/launch/puppeteer", data={"profileID": profile_id, "customArgs": custom_args})
         
-    async def launchSelenium(self, profile_id: ProfileId) -> Dict[str, str]:
+    async def launch_selenium(self, profile_id: ProfileId) -> Dict[str, str]:
         """Launch a browser profile with Selenium automation."""
         return await self.http.get(f"/automation/launch/python/{profile_id}")
         
-    async def launchSeleniumCustom(self, profile_id: ProfileId, custom_args: str) -> Dict[str, str]:
+    async def launch_selenium_custom(self, profile_id: ProfileId, custom_args: str) -> Dict[str, str]:
         """Launch a browser profile with Selenium automation using custom arguments."""
         return await self.http.post(f"/automation/launch/python/{profile_id}/", data={"customArgs": custom_args})

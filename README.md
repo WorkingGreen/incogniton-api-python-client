@@ -8,8 +8,8 @@ This package enables Python developers to automate browser tasks, manage profile
 
 -  Create, update, and delete browser profiles
 -  Manage cookies for any profile
--  Launch and control browsers using Selenium and Playwright
--  Headless automation and custom browser arguments
+-  Launch automation endpoints to get the CDP (Chrome DevTools Protocol) URL for Puppeteer and Playwright and the WebDriver URL for Selenium
+-  Browser Automation SDK using Playwright and Selenium
 -  Built-in error handling and logging
 
 ## Getting Started
@@ -17,10 +17,12 @@ This package enables Python developers to automate browser tasks, manage profile
 ### Installation
 
 ```bash
-# Recommended: Poetry
-poetry install
+# Recommended: install from PyPI
+pip install incogniton
 
-# Or with pip
+# Or, for Development:
+poetry install
+# with pip
 pip install -e .
 ```
 
@@ -56,11 +58,22 @@ from incogniton import IncognitonBrowser
 
 browser = IncognitonBrowser(client, profile_id="your-profile-id", headless=True)
 
-# Selenium example
+# Playwright example (recommended)
+playwright_browser = await browser.start_playwright()
+page = await playwright_browser.new_page()
+await page.goto("https://example.com")
+page_title = await page.title()
+print(page_title)  # Print page title
+await page.screenshot(path="example.png")  # Take a screenshot
+await browser.close(playwright_browser)
+
+# Selenium example (also supported)
 selenium_driver = await browser.start_selenium()
 selenium_driver.get("https://example.com")
 selenium_driver.quit()
 ```
+
+> **Note:** Playwright is the recommended automation tool for most use cases due to its modern API, speed, and reliability. Selenium is also supported, but its Web-driver endpoint is generally less reliable.
 
 ## Configuration Options
 
@@ -82,15 +95,15 @@ Below is a summary of the most commonly used methods and operations available in
    -  Add a new browser profile. "create_request" is a "CreateBrowserProfileRequest".
 -  `await client.profile.update(profile_id, update_request)`
    -  Update an existing browser profile. "update_request" is an "UpdateBrowserProfileRequest".
--  `await client.profile.switchProxy(profile_id, proxy)`
+-  `await client.profile.switch_proxy(profile_id, proxy)`
    -  Update a browser profile's proxy configuration.
 -  `await client.profile.launch(profile_id)`
    -  Launch a browser profile.
--  `await client.profile.launchForceLocal(profile_id)`
+-  `await client.profile.launch_force_local(profile_id)`
    -  Force a browser profile to launch in local mode.
--  `await client.profile.launchForceCloud(profile_id)`
+-  `await client.profile.launch_force_cloud(profile_id)`
    -  Force a browser profile to launch in cloud mode.
--  `await client.profile.getStatus(profile_id)`
+-  `await client.profile.get_status(profile_id)`
    -  Get the current status of a browser profile.
 -  `await client.profile.stop(profile_id)`
    -  Stop a running browser profile.
@@ -108,19 +121,25 @@ Below is a summary of the most commonly used methods and operations available in
 
 ### Automation Operations (`client.automation`)
 
--  `await client.automation.launchSelenium(profile_id)`
+-  `await client.automation.launch_puppeteer(profile_id)`
+   -  Launch a browser profile with Puppeteer automation.
+-  `await client.automation.launch_puppeteer_custom(profile_id, custom_args)`
+   -  Launch a browser profile with Puppeteer automation using custom arguments.
+-  `await client.automation.launch_selenium(profile_id)`
    -  Launch a browser profile with Selenium automation.
--  `await client.automation.launchSeleniumCustom(profile_id, custom_args)`
+-  `await client.automation.launch_selenium_custom(profile_id, custom_args)`
    -  Launch a browser profile with Selenium automation using custom arguments.
 
-### Browser Automation Operations (`browser`)
+## Browser Automation SDK (`browser`)
 
+-  `playwright_browser = await browser.start_playwright()`
+   -  Launch the profile and return a connected Playwright browser instance (Recommended).
 -  `selenium_driver = await browser.start_selenium()`
    -  Launch the profile and return a connected Selenium WebDriver instance.
--  `await browser.close(selenium_driver)`
-   -  Close a single Selenium WebDriver instance with logging and error handling.
--  `await browser.close_all([selenium_driver1, selenium_driver2, ...])`
-   -  Close multiple Selenium WebDriver instances in parallel with logging and error handling.
+-  `await browser.close(playwright_browser)`
+   -  Close a single Playwright browser instance with logging and error handling.
+-  `await browser.close_all([playwright_browser1, playwright_browser2, ...])`
+   -  Close multiple Playwright browser instances in parallel with logging and error handling.
 
 ## Running Tests
 
@@ -136,4 +155,4 @@ We welcome improvements and bugfixes! Please fork the repository, create a branc
 
 ## Need Help?
 
-For questions or support, email <yusuf@incogniton.com> or use our [contact form](https://incogniton.com/contact).
+For questions or support, email <yusuf@incogniton.com> or use the Incogniton [contact form](https://incogniton.com/contact).

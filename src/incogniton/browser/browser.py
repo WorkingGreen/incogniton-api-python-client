@@ -7,10 +7,23 @@ from playwright.async_api import async_playwright, Browser as PlaywrightBrowser
 
 from incogniton.utils.logger import logger
 from incogniton.api.client import IncognitonError
+from incogniton.api.client import IncognitonClient
 
 class IncognitonBrowser:
-    def __init__(self, client, profile_id: str, headless: bool = True, launch_delay: int = 35):
-        self.client = client
+    """
+    Unified browser automation for Incogniton profiles using Playwright or Selenium.
+
+    Args:
+        client: IncognitonClient instance
+        profile_id (str): Incogniton profile ID
+        headless (bool): Launch browsers headless (default: True)
+        launch_delay (int): Wait time for browser init (default: 35)
+    """
+    def __init__(self, profile_id: str, headless: bool = True, launch_delay: int = 35, client: IncognitonClient = None):
+        if client is not None:
+            self.client = client
+        else:
+            self.client = IncognitonClient()
         self.profile_id = profile_id
         self.headless = headless
         self.launch_delay = launch_delay
@@ -18,7 +31,7 @@ class IncognitonBrowser:
     async def start_selenium(self) -> Optional[WebDriver]:
         """Launch the profile and return a connected Selenium WebDriver instance."""
         try:
-            response = await self.client.automation.launchSelenium(self.profile_id)
+            response = await self.client.automation.launch_selenium(self.profile_id)
             print("🚀 ~ response:", response)
             logger.info(f"Launch Selenium response: {response}")
 
@@ -48,7 +61,7 @@ class IncognitonBrowser:
         try:
             # 1. Launch the profile via Incogniton API
             launch_args = "--headless=new" if self.headless else ""
-            response = await self.client.automation.launchPuppeteerCustom(
+            response = await self.client.automation.launch_puppeteer_custom(
                 self.profile_id, launch_args
             )
 
