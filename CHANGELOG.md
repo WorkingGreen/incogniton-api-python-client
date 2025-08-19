@@ -1,3 +1,9 @@
+# [0.2.5]
+
+Changed
+
+-  Improved browser automation reliability and speed by replacing `fixed` wait times with `polling` for browser readiness.
+
 # Changelog
 
 [0.2.4]

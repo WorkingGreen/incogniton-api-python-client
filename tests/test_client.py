@@ -290,9 +290,9 @@ async def test_start_playwright():
            
             # Go to English Wikipedia and take a screenshot of the main page
             page = await playwright_browser.new_page()
-            await page.goto("https://en.wikipedia.org")
-            await page.screenshot(path="wikipedia_article_en.png")
-            logger.info("Screenshot of English Wikipedia main page saved as wikipedia_article_en.png 📸")
+            await page.goto("https://incogniton.com")
+            await page.screenshot(path="incogniton.png")
+            logger.info("Screenshot of English Wikipedia main page saved as incogniton.png 📸")
             if playwright_browser is not None:
                 await browser.close(playwright_browser)
         except IncognitonError as e:

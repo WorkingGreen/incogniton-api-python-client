@@ -4,6 +4,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from typing import Optional
 import asyncio
 from playwright.async_api import async_playwright, Browser as PlaywrightBrowser
+import httpx   
 
 from incogniton.utils.logger import logger
 from incogniton.api.client import IncognitonError
@@ -17,7 +18,7 @@ class IncognitonBrowser:
         client: IncognitonClient instance
         profile_id (str): Incogniton profile ID
         headless (bool): Launch browsers headless (default: True)
-        launch_delay (int): Wait time for browser init (default: 35)
+        launch_delay (int): retained but no longer used for Playwright (kept for API stability)
     """
     def __init__(self, profile_id: str, headless: bool = True, launch_delay: int = 35, client: IncognitonClient = None):
         if client is not None:
@@ -56,6 +57,23 @@ class IncognitonBrowser:
             logger.error(f"Failed to connect to Incogniton Selenium: {str(e)}")
             raise IncognitonError(f"Failed to connect to Incogniton Selenium: {str(e)}")
 
+    async def _wait_for_cdp(self, url: str, timeout_s: int = 120, interval_s: float = 1.5) -> None:
+        """Poll the CDP endpoint until it responds, or time out."""
+        logger.info(f"Probing CDP health at {url} ...")
+        deadline = asyncio.get_event_loop().time() + timeout_s
+        async with httpx.AsyncClient(timeout=2.0) as client:
+            while True:
+                try:
+                    r = await client.get(f"{url.rstrip('/')}/json/version")
+                    if r.status_code == 200:
+                        logger.info("CDP endpoint is ready.")
+                        return
+                except Exception:
+                    pass
+                if asyncio.get_event_loop().time() >= deadline:
+                    raise RuntimeError(f"CDP endpoint not ready after {timeout_s}s: {url}")
+                await asyncio.sleep(interval_s)
+
     async def start_playwright(self) -> PlaywrightBrowser:
         """Launch the Incogniton profile and return a connected Playwright Browser instance."""
         try:
@@ -71,9 +89,9 @@ class IncognitonBrowser:
             if not cdp_url or response.get("status") != "ok":
                 raise RuntimeError("Invalid launch response from Incogniton")
 
-            # 2. Wait for the browser to fully initialize
+            # 2. Wait for the browser's CDP endpoint to become ready (replaces fixed sleep)
             logger.info("Waiting for Incogniton browser to initialize...")
-            await asyncio.sleep(self.launch_delay)
+            await self._wait_for_cdp(cdp_url)  
 
             # 3. Connect to the running browser using CDP
             playwright = await async_playwright().start()
