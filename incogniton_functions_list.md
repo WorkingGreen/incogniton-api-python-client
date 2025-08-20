@@ -22,6 +22,8 @@
    -  Get the current status of a browser profile.
 -  `await client.profile.stop(profile_id)`
    -  Stop a running browser profile.
+-  `await client.profile.force_stop(profile_id)`
+   -  Force stop a running browser profile.
 -  `await client.profile.delete(profile_id)`
    -  Delete a browser profile.
 

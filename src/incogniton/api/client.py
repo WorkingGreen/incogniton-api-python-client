@@ -176,6 +176,10 @@ class ProfileOperations:
     async def stop(self, profile_id: ProfileId) -> Dict[str, str]:
         """Stop a running browser profile."""
         return await self.http.get(f"/profile/stop/{profile_id}")
+    
+    async def force_stop(self, profile_id: ProfileId) -> Dict[str, str]:
+        """Force stop a running browser profile."""
+        return await self.http.get(f"/profile/force-stop/{profile_id}")
         
     async def delete(self, profile_id: ProfileId) -> Dict[str, str]:
         """Delete a browser profile."""

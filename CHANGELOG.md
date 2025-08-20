@@ -1,3 +1,15 @@
+# [0.2.7]
+
+Changed
+
+-  Corrected the `force_stop` method's API route.
+
+# [0.2.6]
+
+Added
+
+-  Added `force_stop(profile_id)` method to the `IncognitonClient` class.
+
 # [0.2.5]
 
 Changed
