@@ -130,10 +130,15 @@ from incogniton.utils.logger import logger
 #         logger.info(f"Status after launch: {status_response}")
 #         assert status_response.get("status") in ["Ready", "Launched"], f"Get status post-launch failed: {status_response}"
 
-#         # Stop the profile
+#         # Stop the profile (graceful)
 #         stop_response = await client.profile.stop(profile_id)
 #         logger.info(f"Profile stopped: {stop_response}")
 #         assert stop_response.get("status") == "ok", f"Stop failed: {stop_response}"
+#
+#         # Or force stop the profile
+#         force_stop_response = await client.profile.force_stop(profile_id)
+#         logger.info(f"Profile force-stopped: {force_stop_response}")
+#         assert force_stop_response.get("status") == "ok", f"Force stop failed: {force_stop_response}"
         
 #         # Get final status
 #         status_response = await client.profile.get_status(profile_id)
@@ -276,13 +281,13 @@ async def test_start_playwright():
             }
         }
     }
-    create_request = CreateBrowserProfileRequest(profileData=profile_data)
-    create_response = await client.profile.add(create_request)
-    logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
-    assert create_response["status"] == "ok"
-    profile_id = create_response["profile_browser_id"]
+    # create_request = CreateBrowserProfileRequest(profileData=profile_data)
+    # create_response = await client.profile.add(create_request)
+    # logger.info(f"Profile created with ID: {create_response.get('profile_browser_id')}")
+    # assert create_response["status"] == "ok"
+    # profile_id = create_response["profile_browser_id"]
     try:
-        # profile_id = "52f4a9c7-8a79-4244-8c1d-2049b3974061"  
+        profile_id = "8a4b2972-e790-4c61-9c5f-8f8910df8784"  
         browser = IncognitonBrowser(profile_id, headless=True)
         try:
             playwright_browser = await browser.start_playwright()

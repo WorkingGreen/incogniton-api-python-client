@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "incogniton"
-version = "0.2.5"
+version = "0.2.6"
 description = "Python client for Incogniton API"
 authors = ["Yusuf Abdulhafeez <yusuf@incogniton.com>"]
 readme = "README.md"
