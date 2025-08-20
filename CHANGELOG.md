@@ -1,9 +1,12 @@
+<<<<<<< HEAD
 # [0.2.7]
 
 Changed
 
 -  Corrected the `force_stop` method's API route.
 
+=======
+>>>>>>> refs/remotes/origin/main
 # [0.2.6]
 
 Added
