@@ -28,7 +28,7 @@ pip install -e .
 
 ### Requirements
 
--  Python 3.8 or newer
+-  Python 3.9 or newer
 -  Incogniton desktop app running locally
 
 ## Example Usage
@@ -39,6 +39,9 @@ pip install -e .
 from incogniton import IncognitonClient
 
 client = IncognitonClient()
+
+# Target a non-default app port (Incogniton's API port is configurable in the Debug settings tab)
+client = IncognitonClient(port=40000)
 
 # Add a new profile
 data = {"profileData": {"general_profile_information": {"profile_name": "Test Profile"}}}
@@ -85,6 +88,13 @@ selenium_driver.quit()
 
 Below is a summary of the most commonly used methods and operations available in the Incogniton Python SDK. For a complete and up-to-date API reference, please see the [official Incogniton API Documentation](https://api-docs.incogniton.com/).
 
+### System Operations (`client.system`)
+
+-  `await client.system.alive()`
+   -  Health probe. Returns `"OK"` when the desktop app is reachable.
+-  `await client.system.close()`
+   -  Shut down the Incogniton application.
+
 ### Profile Operations (`client.profile`)
 
 -  `await client.profile.list()`
@@ -97,12 +107,22 @@ Below is a summary of the most commonly used methods and operations available in
    -  Update an existing browser profile. "update_request" is an "UpdateBrowserProfileRequest".
 -  `await client.profile.switch_proxy(profile_id, proxy)`
    -  Update a browser profile's proxy configuration.
+-  `await client.profile.clone(profile_id, profile_name=None, target_group=None, clone_cookies=None, clone_advanced_other_settings=None, clone_useragent=None, clone_other_browser_data=None)`
+   -  Clone a profile with custom settings. Returns the new clone's `profile_browser_id`.
+-  `await client.profile.clone_quick(profile_id)`
+   -  Clone a profile using all-default settings (same name/group, every clone option on).
 -  `await client.profile.launch(profile_id)`
    -  Launch a browser profile.
 -  `await client.profile.launch_force_local(profile_id)`
    -  Force a browser profile to launch in local mode.
 -  `await client.profile.launch_force_cloud(profile_id)`
    -  Force a browser profile to launch in cloud mode.
+-  `await client.profile.dry_launch(profile_id)`
+   -  Prepare a launch without opening a browser; returns the built launch command as `arg`.
+-  `await client.profile.dry_launch_force_local(profile_id)`
+   -  Dry-launch, forcing the local copy when out of sync.
+-  `await client.profile.dry_launch_force_cloud(profile_id)`
+   -  Dry-launch, forcing the cloud copy when out of sync.
 -  `await client.profile.get_status(profile_id)`
    -  Get the current status of a browser profile.
 -  `await client.profile.stop(profile_id)`
@@ -125,12 +145,24 @@ Below is a summary of the most commonly used methods and operations available in
 
 -  `await client.automation.launch_puppeteer(profile_id)`
    -  Launch a browser profile with Puppeteer automation.
+-  `await client.automation.launch_puppeteer_force_local(profile_id)`
+   -  Launch for Puppeteer, forcing the local copy when out of sync.
+-  `await client.automation.launch_puppeteer_force_cloud(profile_id)`
+   -  Launch for Puppeteer, forcing the cloud copy when out of sync.
 -  `await client.automation.launch_puppeteer_custom(profile_id, custom_args)`
    -  Launch a browser profile with Puppeteer automation using custom arguments.
 -  `await client.automation.launch_selenium(profile_id)`
    -  Launch a browser profile with Selenium automation.
+-  `await client.automation.launch_selenium_force_local(profile_id)`
+   -  Launch on the Selenium grid, forcing the local copy when out of sync.
+-  `await client.automation.launch_selenium_force_cloud(profile_id)`
+   -  Launch on the Selenium grid, forcing the cloud copy when out of sync.
 -  `await client.automation.launch_selenium_custom(profile_id, custom_args)`
-   -  Launch a browser profile with Selenium automation using custom arguments.
+   -  Launch a browser profile with Selenium automation using custom arguments (profile id in the URL path).
+-  `await client.automation.launch_selenium_custom_body(profile_id, custom_args=None, force_local=False, force_cloud=False)`
+   -  Launch on the Selenium grid with custom args, profile id in the request body.
+-  `await client.automation.launch_cookie_robot(profile_id)`
+   -  Run the cookie-collection robot on a profile.
 
 ## Browser Automation SDK (`browser`)
 
