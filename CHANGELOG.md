@@ -1,12 +1,29 @@
-<<<<<<< HEAD
+# [0.3.0]
+
+Added
+
+-  `client.system` operations: `alive()` (health probe) and `close()` (shut down the Incogniton app).
+-  Profile cloning: `client.profile.clone(...)` (custom settings) and `client.profile.clone_quick(profile_id)` (all-defaults).
+-  Dry-launch (build a launch without opening a browser): `client.profile.dry_launch(profile_id)`, `dry_launch_force_local`, and `dry_launch_force_cloud`.
+-  Automation force-sync launch variants: `launch_puppeteer_force_local` / `launch_puppeteer_force_cloud` and `launch_selenium_force_local` / `launch_selenium_force_cloud`.
+-  `client.automation.launch_selenium_custom_body(...)` — Selenium custom-args launch with the profile id in the request body.
+-  `client.automation.launch_cookie_robot(profile_id)` — run the cookie-collection robot.
+-  Optional `port` argument: `IncognitonClient(port=...)` targets a non-default app port.
+
+Changed
+
+-  `system.alive()` normalizes the server response (JSON-quoted `"OK"` or bare `OK`) to a plain `OK` across app versions.
+
+Fixed
+
+-  `switch_proxy()` now serializes a `Proxy` model correctly (previously raised "Object of type Proxy is not JSON serializable").
+
 # [0.2.7]
 
 Changed
 
 -  Corrected the `force_stop` method's API route.
 
-=======
->>>>>>> refs/remotes/origin/main
 # [0.2.6]
 
 Added

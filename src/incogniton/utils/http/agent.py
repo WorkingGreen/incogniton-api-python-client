@@ -106,6 +106,28 @@ class HttpAgent:
         """Make a GET request."""
         return await self.request("GET", endpoint)
 
+    async def get_text(self, endpoint: str) -> str:
+        """Make a GET request and return the raw response text (for non-JSON endpoints)."""
+        try:
+            response = await self._client.request(
+                method="GET",
+                url=endpoint,
+                headers=self.headers,
+            )
+            response.raise_for_status()
+            return response.text
+        except httpx.HTTPStatusError as e:
+            raise IncognitonError(
+                message=f"API Error: {e.response.text}",
+                status_code=e.response.status_code,
+            )
+        except httpx.ConnectError as e:
+            raise IncognitonError(f"Connection error: {str(e)}")
+        except httpx.TimeoutException:
+            raise IncognitonError(f"Request timed out after {self.timeout} seconds")
+        except Exception as e:
+            raise IncognitonError(f"Unexpected error: {str(e)}")
+
     async def post(
         self,
         endpoint: str,
