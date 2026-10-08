@@ -48,12 +48,16 @@ class IncognitonClient:
         base_url (str, optional): Base URL for the Incogniton API.
             If not provided, defaults to http://localhost:35000.
             Can be overridden by INCOGNITON_API_URL environment variable.
+        port (int, optional): Port of the local app; builds http://localhost:<port>.
+        timeout (float, optional): Request timeout in seconds (default 35).
     """
 
-    def __init__(self, base_url: str = DEFAULT_BASE_URL, *, port: Optional[int] = None):
+    def __init__(self, base_url: str = DEFAULT_BASE_URL, *, port: Optional[int] = None, timeout: float = 35):
         if port is not None:
             base_url = f"http://localhost:{port}"
-        self.http = HttpAgent(base_url)
+        # Request timeout in seconds. Launch and stop calls block until the app finishes
+        # (including cloud sync), so slow profiles may need more than the 35 s default.
+        self.http = HttpAgent(base_url, timeout=timeout)
 
     @property
     def system(self) -> "SystemOperations":

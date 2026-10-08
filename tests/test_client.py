@@ -80,6 +80,14 @@ class TestClientInit:
         assert "11111" in client.http.base_url
         assert "9999" not in client.http.base_url
 
+    def test_default_timeout_is_35_seconds(self):
+        assert IncognitonClient().http.timeout == 35
+
+    def test_timeout_kwarg_is_passed_to_http_client(self):
+        client = IncognitonClient(port=40000, timeout=120)
+        assert client.http.timeout == 120
+        assert client.http._client.timeout.read == 120
+
     def test_system_property_type(self):
         assert isinstance(IncognitonClient().system, SystemOperations)
 
