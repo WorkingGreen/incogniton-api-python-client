@@ -1,3 +1,9 @@
+# [0.3.1]
+
+Added
+
+-  Optional `timeout` argument: `IncognitonClient(timeout=...)` sets the HTTP timeout in seconds (default 35, unchanged). Raise it for launch and stop calls, which block until the app's pipeline, including cloud sync, has finished.
+
 # [0.3.0]
 
 Added
